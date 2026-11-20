@@ -1,0 +1,41 @@
+{
+  "about": "Loopback: USB loopback in three states.",
+  "name": "loopback",
+  "version": 1,
+  "interface": 1,
+  "build": "loopback",
+  "sources": [
+    "../loopback/loopback.s",
+    "../loopback/loopback.cpp",
+    "../loopback/loopback_table.s",
+    "../loopback/loopback_card.s",
+    "../loopback/loopback_pictures.s"
+  ],
+  "works_with": [],
+  "serves": [],
+  "exports": [],
+  "pictures": [
+    {
+      "name": "micline.svg",
+      "file": "../loopback/micline.svg.make"
+    }
+  ],
+  "card": {
+    "level": 3,
+    "frame": "loopback_frame",
+    "pick": null,
+    "pictures": true,
+    "input": "loopback_input",
+    "folders": [
+      {
+        "name": "loopback",
+        "place": "loopback",
+        "shown": false
+      }
+    ]
+  },
+  "marks": [],
+  "named": true,
+  "sum": true,
+  "path": null
+}

@@ -1,0 +1,10 @@
+.build/
+out/
+local.env
+micline.svg.make
+loopback_parts.h
+loopback_card.s
+loopback_pictures.s
+loopback_table.s
+__pycache__/
+.DS_Store

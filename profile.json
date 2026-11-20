@@ -1,0 +1,67 @@
+{
+  "schema": 2,
+  "id": "op1f-1.7.3-loopback",
+  "device": "OP-1 Field",
+  "firmware_version": "1.7.3+0",
+  "module_base": "0x8d2e4234",
+  "reserved_bytes": 2097152,
+  "cpu": "bf703",
+  "stock_sha256": "d134eb1ac7ad88e8370d988329cd5d7419f016005b1d269034f9cf7166fad0ec",
+  "stock_bytes": 2079016,
+  "patches": [
+    {
+      "address": "0x11a0593a",
+      "length": 8,
+      "sum": "0xc91d4c94",
+      "group": "loopback"
+    },
+    {
+      "address": "0x11a059ce",
+      "length": 8,
+      "sum": "0x75a30269",
+      "group": "loopback"
+    },
+    {
+      "address": "0x8c0d8ee6",
+      "length": 8,
+      "sum": "0x49ef6ba4",
+      "group": "loopback"
+    },
+    {
+      "address": "0x8c0d8f44",
+      "length": 8,
+      "sum": "0xbdea37ad",
+      "group": "loopback"
+    }
+  ],
+  "image": [],
+  "tables": [
+    {
+      "file": "../loopback/loopback_table.s",
+      "part": "loopback",
+      "symbol": "op1f_boot_table",
+      "entries": [
+        {
+          "address": "0x11a0593a",
+          "form": "call",
+          "target": "op1f_loopback_in"
+        },
+        {
+          "address": "0x11a059ce",
+          "form": "call",
+          "target": "op1f_loopback_mix"
+        },
+        {
+          "address": "0x8c0d8ee6",
+          "form": "call",
+          "target": "op1f_loopback_usb"
+        },
+        {
+          "address": "0x8c0d8f44",
+          "form": "call",
+          "target": "op1f_loopback_out"
+        }
+      ]
+    }
+  ]
+}
