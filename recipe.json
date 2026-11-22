@@ -1,7 +1,7 @@
 {
   "about": "Loopback: USB loopback in three states.",
   "name": "loopback",
-  "version": 1,
+  "version": 2,
   "interface": 1,
   "build": "loopback",
   "sources": [

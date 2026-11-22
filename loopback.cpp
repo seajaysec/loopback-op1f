@@ -23,8 +23,9 @@ extern "C" volatile u32 op1f_loopback_held OP1F_NAMED("op1f_loopback_held");
 extern "C" volatile u32 op1f_loopback_due OP1F_NAMED("op1f_loopback_due");
 extern "C" volatile u32 op1f_loopback_fresh OP1F_NAMED("op1f_loopback_fresh");
 extern "C" volatile int op1f_loopback_inpeak OP1F_NAMED("op1f_loopback_inpeak");
+extern "C" volatile u32 op1f_loopback_amp OP1F_NAMED("op1f_loopback_amp");
 extern "C" { volatile u32 op1f_loopback_mode = 0, op1f_loopback_speaker = 0, op1f_loopback_held = 0,
-             op1f_loopback_due = 0, op1f_loopback_fresh = 0;
+             op1f_loopback_due = 0, op1f_loopback_fresh = 0, op1f_loopback_amp = 0;
              volatile int op1f_loopback_inpeak = 0; }
 extern "C" const int op1f_loopback_dry[128] OP1F_NAMED("op1f_loopback_dry");
 extern "C" const int op1f_loopback_return[128] OP1F_NAMED("op1f_loopback_return");
@@ -274,7 +275,7 @@ static int field_playing(int usb_peak) {
 
 static int input_arriving(void* document, int inn) {
     if (inn > SOUND) return 1;
-    if (INPUT_ROUTE == 0 && INPUT_BLOCK) {
+    if ((INPUT_ROUTE == 0 || op1f_loopback_amp) && INPUT_BLOCK) {
         for (int i = 0; i < 128; ++i) {
             int v = magnitude(INPUT_BLOCK[i]);
             if (v > inn) inn = v;
@@ -308,7 +309,7 @@ static void dress_strip(const Op1fFrame* now) {
     int src = (int)INPUT_SOURCE;
     int mode = op1f_loopback_mode < (u32)MODES ? (int)op1f_loopback_mode : 0;
     int up = src >= 0 && src < LB_SRC && now->screen == (u32)INPUT_SCREEN;
-    int open = INPUT_ROUTE == 0;
+    int open = INPUT_ROUTE == 0 || op1f_loopback_amp != 0;
     int playing = field_playing(send);
     int arriving = input_arriving(document, inn);
     if (!open) strip.send_ms = strip.return_ms = strip.in_ms = 0;

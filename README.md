@@ -1,7 +1,7 @@
 # Loopback
 
 USB loopback in three states for the OP-1 Field, as an [open-field](https://github.com/LaP0573/open-field) pack for
-OS 1.7.3.
+OS 1.7.3 (open-field 0.12 or later).
 
 ![Loopback](docs/loopback.gif)
 
@@ -10,7 +10,7 @@ Use at your own risk; see [LICENSE](LICENSE).
 
 ## Install
 
-Put `loopback.pack` (from [releases](../../releases)) in the unit's `packs` folder next to open-field's `base.pack`,
+Put `loopback.pack` (in this repository, or from [releases](../../releases)) in the unit's `packs` folder next to open-field's `base.pack`,
 and restart. Hold **Help** while switching on to start without packs.
 
 ## Use
@@ -25,6 +25,8 @@ On the input screen, click the blue knob to step through the states. They apply 
 
 - Click the gray knob to keep the speaker on with a cable in the jack.
 - In wet, set your effect to 100% wet to hear only what comes back.
+- With the amp engine on the synth, the amp's sound is the return: wet+dry keeps it out of USB, and wet sends it
+  alone, so the Field works as an amp for the computer. The Field plays it in both.
 
 ## Build
 

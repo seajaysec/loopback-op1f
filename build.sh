@@ -11,7 +11,7 @@ for need in "$OF/tools" "$XY/tooling" "$TC/bfin-elf-g++"; do
 done
 
 mkdir -p "$WORK/open-field/open-xy/local/toolchain"
-rsync -a --delete --exclude build --exclude out --exclude out-set --exclude open-xy --exclude .git "$OF/" "$WORK/open-field/"
+rsync -a --chmod=u+w --delete --exclude build --exclude out --exclude out-set --exclude open-xy --exclude .git "$OF/" "$WORK/open-field/"
 mkdir -p "$WORK/open-field/open-xy/local/toolchain"
 rsync -a --delete --exclude __pycache__ "$XY/tooling/" "$WORK/open-field/open-xy/tooling/"
 ln -sfn "$TC" "$WORK/open-field/open-xy/local/toolchain/bin"
