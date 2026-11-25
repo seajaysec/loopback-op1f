@@ -10,8 +10,9 @@ Use at your own risk; see [LICENSE](LICENSE).
 
 ## Install
 
-Put `loopback.pack` (in this repository, or from [releases](../../releases)) in the unit's `packs` folder next to open-field's `base.pack`,
-and restart. Hold **Help** while switching on to start without packs.
+On open-field's [install page](https://lap0573.github.io/open-field/), open the packs section and tick **loopback**
+(once listed). Or put `loopback.pack` from this repository into the unit's `packs` folder next to `base.pack` and
+restart. Hold **Help** while switching on to start without packs.
 
 ## Use
 

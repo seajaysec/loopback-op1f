@@ -16,6 +16,8 @@ mkdir -p "$WORK/open-field/open-xy/local/toolchain"
 rsync -a --delete --exclude __pycache__ "$XY/tooling/" "$WORK/open-field/open-xy/tooling/"
 ln -sfn "$TC" "$WORK/open-field/open-xy/local/toolchain/bin"
 ln -sfn "$ROOT" "$WORK/loopback"
+python3 -c "p='$WORK/open-field/tools/module_build.py'; t=open(p).read(); f='-fno-schedule-insns2';
+open(p,'w').write(t if f in t else t.replace('\"-O2\"', '\"-O2\", \"%s\"' % f))"
 
 python3 "$ROOT/art/make_picture.py"
 cd "$WORK/open-field"
@@ -38,4 +40,5 @@ python3 -I tools/pack_build.py check --pack ../loopback/out/loopback.pack | tee 
 if grep '^wants:' "$WORK/check.txt" | grep -q '___'; then
   echo "the pack wants a library routine (a division?): the loader would refuse it" >&2; rm -f "$ROOT/out/loopback.pack"; exit 1
 fi
+cp -f "$ROOT/out/loopback.pack" "$ROOT/loopback.pack"
 echo "built $ROOT/out/loopback.pack"
