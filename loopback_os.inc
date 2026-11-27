@@ -10,7 +10,7 @@
     P1.H = 0x8d4e
     P1.L = 0x75c4
 .endm
-.macro os_speaker
-    P0.H = 0x8400
-    P0.L = 0xdec9
+.macro os_speaker reg=P0
+    \reg\().H = 0x8400
+    \reg\().L = 0xdec9
 .endm

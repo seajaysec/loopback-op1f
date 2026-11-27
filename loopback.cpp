@@ -10,9 +10,9 @@ typedef unsigned u32;
 #define PLAY_PEAK (*(volatile const int*)0x11902e04u)
 #define INPUT_BLOCK ((volatile const int*)0x119025a0u)
 
-enum { MODE_LOOP = 0, MODE_BREAK = 1, MODE_WET = 2, MODES = 3, INPUT_SCREEN = 43,
+enum { MODE_OFF = 0, MODE_LOOP = 1, MODE_BREAK = 2, MODE_WET = 3, MODES = 4, INPUT_SCREEN = 43,
        KEY_BLUE_CLICK = 54, KEY_GRAY_CLICK = 56, FRAMES = 64,
-       SAVE_FOLDER = 0, SAVE_QUIET_MS = 1000, SAVE_MAGIC = 0x4b4f4f4c, SAVE_VERSION = 2 };
+       SAVE_FOLDER = 0, SAVE_QUIET_MS = 1000, SAVE_MAGIC = 0x4b4f4f4c, SAVE_VERSION = 3, SAVE_VERSION_2 = 2 };
 
 extern "C" const Op1fCard op1f_card_loopback OP1F_NAMED("op1f_card_loopback");
 static const char SAVE_NAME[] = "loopback.bin";
@@ -94,6 +94,7 @@ extern "C" int loopback_input(const Op1fInput* e) {
     int gray = taken_click(e, KEY_GRAY_CLICK);
     if (gray == 1) return 1;
     if (gray == 2) {
+        if (op1f_loopback_mode == (u32)MODE_OFF) return 0;
         op1f_loopback_speaker = op1f_loopback_speaker ? 0u : 1u;
         edits = edits + 1;
         return 1;
@@ -107,8 +108,12 @@ static struct { u32 loaded, edits_seen, changed_ms; } disk;
 static void load_settings() {
     Saved s;
     int got = op1f_read(&op1f_card_loopback, SAVE_FOLDER, SAVE_NAME, &s, sizeof s);
-    if (got != (int)sizeof s || s.magic != (u32)SAVE_MAGIC || s.version != (u32)SAVE_VERSION) return;
-    if (s.mode >= (u32)MODES || s.speaker > 1u) return;
+    if (got != (int)sizeof s || s.magic != (u32)SAVE_MAGIC) return;
+    if (s.version == (u32)SAVE_VERSION_2) {
+        if (s.speaker <= 1u) op1f_loopback_speaker = s.speaker;
+        return;
+    }
+    if (s.version != (u32)SAVE_VERSION || s.mode >= (u32)MODES || s.speaker > 1u) return;
     op1f_loopback_mode = s.mode;
     op1f_loopback_speaker = s.speaker;
 }
@@ -156,19 +161,47 @@ static const char* const ICON_PART[2] = { "inputs_texts", "input_icons" };
 
 static int matrix_dy(void* node) { return ((const int*)((const char*)node + 4))[7]; }
 
-static struct { void* doc; void* group; void* part[2]; } icons;
+struct Lent { void* node; int was[9]; int lent; };
+
+static void lend(Lent* l, void* node) {
+    if (l->node != node) { l->node = node; l->lent = 0; }
+    if (!node || l->lent) return;
+    const int* m = (const int*)((const char*)node + 4);
+    for (int i = 0; i < 9; ++i) l->was[i] = m[i];
+    l->lent = 1;
+}
+
+static void give_back(Lent* l) {
+    if (l->node && l->lent) op1f_move(l->node, l->was);
+    l->lent = 0;
+}
+
+static struct { void* doc; void* group; void* part[2]; void* box; Lent lent[3]; } icons;
+
+static void find_icons(void* document) {
+    if (document == icons.doc) return;
+    icons.doc = document;
+    icons.group = document ? op1f_node(document, "inputs") : 0;
+    for (int i = 0; i < 2; ++i) icons.part[i] = document ? op1f_node(document, ICON_PART[i]) : 0;
+    icons.box = document ? op1f_node(document, "keytorec") : 0;
+    for (int i = 0; i < 3; ++i) icons.lent[i].node = 0, icons.lent[i].lent = 0;
+}
 
 static void hold_icons(void* document) {
-    if (document != icons.doc) {
-        icons.doc = document;
-        icons.group = document ? op1f_node(document, "inputs") : 0;
-        for (int i = 0; i < 2; ++i) icons.part[i] = document ? op1f_node(document, ICON_PART[i]) : 0;
-    }
+    find_icons(document);
     if (!icons.group) return;
     int back = -matrix_dy(icons.group);
     int m[9] = { Q, 0, 0, 0, Q, 0, 0, back, Q };
     for (int i = 0; i < 2; ++i)
-        if (icons.part[i] && matrix_dy(icons.part[i]) != back) op1f_move(icons.part[i], m);
+        if (icons.part[i] && matrix_dy(icons.part[i]) != back) {
+            lend(&icons.lent[i], icons.part[i]);
+            op1f_move(icons.part[i], m);
+        }
+}
+
+static void free_icons(void* document) {
+    find_icons(document);
+    for (int i = 0; i < 3; ++i) give_back(&icons.lent[i]);
 }
 
 static int overlay_up(void* document) {
@@ -188,10 +221,11 @@ static int overlay_up(void* document) {
 static signed char placed[LB_PARTS];
 
 static void fit_sample(void* document) {
-    if (!document) return;
-    void* box = op1f_node(document, "keytorec");
+    find_icons(document);
+    void* box = icons.box;
     if (!box || ((const unsigned char*)box)[0x5c] == 0) return;
     int m[9] = { SAMP, 0, 0, 0, SAMP, 0, SAMP_TX, SAMP_TY, Q };
+    lend(&icons.lent[2], box);
     op1f_move(box, m);
 }
 
@@ -295,9 +329,27 @@ static int input_arriving(void* document, int inn) {
     return 0;
 }
 
+static void off_strip(const Op1fFrame* now, void* document) {
+    free_icons(document);
+    level_send = 0;
+    level_return = 0;
+    op1f_loopback_inpeak = 0;
+    strip.send_ms = strip.return_ms = strip.in_ms = 0;
+    if (strip.found != LB_PARTS) return;
+    int src = (int)INPUT_SOURCE;
+    int up = src >= 0 && src < LB_SRC && now->screen == (u32)INPUT_SCREEN && !overlay_up(document);
+    strip.up = up;
+    for (int p = 0; p < LB_PARTS; ++p) show(p, up && (p == LB_FIELD || p == LB_WORD0 + MODE_OFF));
+}
+
 static void dress_strip(const Op1fFrame* now) {
     void* document = op1f_screen(INPUT_SCREEN);
     if (document != strip.document) make_strip(document);
+    u32 state = op1f_loopback_mode;
+    if (state == (u32)MODE_OFF || state >= (u32)MODES) {
+        off_strip(now, document);
+        return;
+    }
     hold_icons(document);
     fit_sample(document);
     int send = level_send, back = level_return, inn = op1f_loopback_inpeak;
@@ -307,7 +359,7 @@ static void dress_strip(const Op1fFrame* now) {
     if (strip.found != LB_PARTS) return;
     u32 ms = now->ms;
     int src = (int)INPUT_SOURCE;
-    int mode = op1f_loopback_mode < (u32)MODES ? (int)op1f_loopback_mode : 0;
+    int mode = (int)state;
     int up = src >= 0 && src < LB_SRC && now->screen == (u32)INPUT_SCREEN;
     int open = INPUT_ROUTE == 0 || op1f_loopback_amp != 0;
     int playing = field_playing(send);
