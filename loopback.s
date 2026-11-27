@@ -6,10 +6,25 @@
 op1f_loopback_in:
     [--SP] = ASTAT;
     [--SP] = R0;
+    P1.H = op1f_loopback_mode;
+    P1.L = op1f_loopback_mode;
+    R0 = [P1];
+    CC = R0 == 0;
+    IF !CC JUMP .Lin_on;
+    P1.H = 0x1190;
+    P1.L = 0x2dfc;
+    R0 = [SP++];
+    ASTAT = [SP++];
+    RTS;
+.Lin_on:
+    R0 += -1;
     [--SP] = R1;
     [--SP] = R2;
     [--SP] = P0;
     [--SP] = P2;
+    P0.H = op1f_loopback_block;
+    P0.L = op1f_loopback_block;
+    [P0] = R0;
     P1.H = 0x1190;
     P1.L = 0x2dfc;
     R2 = 0;
@@ -74,8 +89,8 @@ op1f_loopback_in:
     R0 = 0;
     [P0] = R0;
 .Lin_mode:
-    P0.H = op1f_loopback_mode;
-    P0.L = op1f_loopback_mode;
+    P0.H = op1f_loopback_block;
+    P0.L = op1f_loopback_block;
     R2 = [P0];
     R0 = [P1 + 0x4c];
     R1 = 3;
@@ -198,6 +213,11 @@ op1f_loopback_mix:
     R1 = [P0];
     R0 = 0;
     [P0] = R0;
+    P0.H = op1f_loopback_mode;
+    P0.L = op1f_loopback_mode;
+    R2 = [P0];
+    CC = R2 == 0;
+    IF CC R1 = R0;
     P0.H = op1f_loopback_due;
     P0.L = op1f_loopback_due;
     [P0] = R1;
@@ -249,6 +269,17 @@ op1f_loopback_mix:
 .global op1f_loopback_usb
 .type op1f_loopback_usb, STT_FUNC
 op1f_loopback_usb:
+    [--SP] = ASTAT;
+    P1.H = op1f_loopback_mode;
+    P1.L = op1f_loopback_mode;
+    P1 = [P1];
+    CC = P1 == 0;
+    IF !CC JUMP .Lusb_on;
+    ASTAT = [SP++];
+    os_usb_send
+    JUMP (P1);
+.Lusb_on:
+    ASTAT = [SP++];
     [--SP] = RETS;
     [--SP] = R4;
     [--SP] = R2;
@@ -292,6 +323,16 @@ op1f_loopback_usb:
 op1f_loopback_out:
     [--SP] = ASTAT;
     [--SP] = R0;
+    P1.H = op1f_loopback_mode;
+    P1.L = op1f_loopback_mode;
+    R0 = [P1];
+    CC = R0 == 0;
+    IF !CC JUMP .Lout_on;
+    os_speaker P1
+    R0 = [SP++];
+    ASTAT = [SP++];
+    RTS;
+.Lout_on:
     [--SP] = R1;
     [--SP] = P0;
     [--SP] = P2;
@@ -341,3 +382,8 @@ op1f_loopback_dry:
 op1f_loopback_jack:
     .space 4
 .size op1f_loopback_jack, .-op1f_loopback_jack
+.global op1f_loopback_block
+.type op1f_loopback_block, STT_OBJECT
+op1f_loopback_block:
+    .space 4
+.size op1f_loopback_block, .-op1f_loopback_block

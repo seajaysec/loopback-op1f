@@ -136,6 +136,8 @@ def glyph(ch, x, y, s, colour=NAVY, stroke=1.55):
         return P(0, 0, 0.2, 6, 1.8, 2.4, 3.4, 6, 3.6, 0)
     if ch == "E":
         return P(3.6, 0, 0, 0, 0, 6, 3.6, 6) + P(0, 3, 2.8, 3)
+    if ch == "F":
+        return P(3.6, 0, 0, 0, 0, 6) + P(0, 3, 2.8, 3)
     if ch == "T":
         return P(0, 0, 3.6, 0) + P(1.8, 0, 1.8, 6)
     raise SystemExit("no letter %s" % ch)
@@ -400,7 +402,7 @@ def route_colour(enum):
 
 PARTS = [
     ("lbfd", "LB_FIELD"),
-    ("lbw0", "LB_WORD0"), ("lbw1", "LB_WORD1"), ("lbw2", "LB_WORD2"),
+    ("lbw0", "LB_WORD0"), ("lbw1", "LB_WORD1"), ("lbw2", "LB_WORD2"), ("lbw3", "LB_WORD3"),
     ("lbst", "LB_STOP"),
     ("lbsp", "LB_SPEAKER"), ("lbhp", "LB_LINE"), ("lbpl", "LB_PLUS"),
     ("lbmx", "LB_MIX"),
@@ -412,10 +414,12 @@ def art_of(enum):
     if enum == "LB_FIELD":
         return field_art()
     if enum == "LB_WORD0":
-        return word_art(["LOOP"])
+        return word_art(["OFF"])
     if enum == "LB_WORD1":
-        return word_art(["DRY", "+", "WET"])
+        return word_art(["LOOP"])
     if enum == "LB_WORD2":
+        return word_art(["DRY", "+", "WET"])
+    if enum == "LB_WORD3":
         return word_art(["WET"])
     if enum == "LB_STOP":
         return stop_art()
